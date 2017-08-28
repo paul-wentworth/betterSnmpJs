@@ -106,7 +106,7 @@ class snmpServer
                     self.reqs.unregisterRequest(req);
 
                     req.cb(new Error('Timeout'));
-                    console.log(`${self.sendCount}sent, ${self.recvCount}replies, ${self.tmtCount}timed out, ${self.sendFailCount}send fails, ${self.recvAfterTimeout} late replies`);
+                    // console.log(`${self.sendCount}sent, ${self.recvCount}replies, ${self.tmtCount}timed out, ${self.sendFailCount}send fails, ${self.recvAfterTimeout} late replies`);
                     return;
                 }
                 else { req.retries--; }
@@ -170,7 +170,7 @@ class snmpServer
                 }
 				
                 /* Initiate user callback */
-                req.cb(parsedVarbinds);
+                req.cb(null, parsedVarbinds);
             }
             else
             {
@@ -190,9 +190,8 @@ class snmpServer
         }
 
         //[dbg]
-        console.log(`${this.sendCount}sent, ${this.recvCount}replies, ${this.tmtCount}timed out, ${this.sendFailCount}send fails, ${this.recvAfterTimeout} late replies`);
+        // console.log(`${this.sendCount}sent, ${this.recvCount}replies, ${this.tmtCount}timed out, ${this.sendFailCount}send fails, ${this.recvAfterTimeout} late replies`);
     }
-
 
     /* ------------- User Interface Methods ------------- */
 
@@ -220,6 +219,95 @@ class snmpServer
         msg = this._buildMessage(snmpOptions, pduType, pduControlFields, pduVarbinds);
         this._sendMessage(msg, destination, callback); 
     }
+
+    getNextRequest(snmpOptions, destination, oids, callback)
+    {
+        let pduType = snmpLib.PDUTYPES.GetNextRequest; // 161
+        let pduControlFields = []; // Array of single property objects. 
+        let pduVarbinds = [];      // Array of Arrays of single property objects. 
+        let msg; 
+        
+        /* Build PDU Control Fields */
+        pduControlFields = snmpLib.generateNewRequestCfs(this.reqs); 
+
+        /* Build PDU Variable Bindings */		
+        for( let i = 0; i < oids.length; i++ ) 
+        {
+            let varbind = []; // Build array
+            varbind.push( {oid: oids[i]} ); 
+            varbind.push( {value: undefined} );
+
+            pduVarbinds.push(varbind); // Insert array into array
+        }
+
+        /* Build & Send Message */
+        msg = this._buildMessage(snmpOptions, pduType, pduControlFields, pduVarbinds);
+        this._sendMessage(msg, destination, callback); 
+    }
+
+    walk(snmpOptions, destination, oid, callback)
+    {
+        let results = [];
+
+        function receiveNext(err, varbind)
+        {
+            if( err ) { callback(err); }
+            else
+            {
+                let nextOid = varbind[0].oid;
+                if( snmpLib.inTree(oid, nextOid) )
+                {
+                    results.push(varbind[0]);
+                    this.getNextRequest(snmpOptions, destination, [nextOid], receiveNext.bind(this));
+                }
+                else
+                {
+                    // Walk complete. Return results.
+                    callback(null, results);
+                }
+            }
+        }
+        this.getNextRequest(snmpOptions, destination, [oid], receiveNext.bind(this));
+    }
+
+    table(snmpOptions, destination, tableOid, callback)
+    {
+        function buildTable(err, varbinds)
+        {
+            if( err ) { callback(err); }
+            else
+            {
+                let table = []; // table = [rows][cols]
+                let entries = varbinds.length;
+                let rows = parseInt(varbinds[varbinds.length - 1].oid[varbinds[varbinds.length - 1].oid.length - 1]);
+                let cols = parseInt(entries / rows);
+                
+                for( let r = 0; r < rows; r++ )
+                {
+                    let row = [];
+                    for( let c = 0; c < cols; c++ )
+                    {
+                        row.push(undefined);
+                    }
+                    table.push(row);
+                }
+
+                let col = 0;
+                for( let v = 0; v < varbinds.length; v++ )
+                {
+                    let row = parseInt(varbinds[v].oid[varbinds[v].oid.length - 1]);
+                    table[row - 1][col] = varbinds[v].value;
+                    if( row == rows ) { col++; }
+                }
+    
+                callback(null, table);
+            }
+        }
+
+        this.walk(snmpOptions, destination, tableOid, buildTable.bind(this));
+    }
+
+
 
     trap(snmpOptions, destination, enterprise, agent, generic, specific, varbinds, callback)
     {
@@ -256,6 +344,13 @@ class snmpServer
         /* Build & Send Message */
         // [TODO]
     }
+
+    close()
+    {
+        this.socket.close();
+        if( this.trapSocket ) { this.trapSocket.close(); }
+        return;
+    }   
 }
 
 
