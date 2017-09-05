@@ -58,7 +58,12 @@ srv.getRequest(snmpOptions, destination, oids, tableCb);
 ### trap()
 [in development...]
 
+
+### close()
+Closes any open sockets allowing the Object to be safely disposed. 
       
+      
+     
      
 ## Using `snmptranslate` to get useable OID strings from an MIB
 `snmptranslate -M <directory containing MIB, or single MIB file> -m ALL -Pu -Tso`
