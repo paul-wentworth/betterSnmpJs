@@ -56,7 +56,7 @@ srv.getRequest(snmpOptions, destination, oids, tableCb);
  
   
 ### trap()
-<in development>
+[in development...]
 
       
      
