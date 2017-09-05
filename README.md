@@ -17,7 +17,7 @@ snmpTrapOptions = { interface: , port: , listener: }
 
 const srv = new SnmpServer(snmpOptions, snmpTrapOptions);
 ```
-SnmpServer sets defaults for all the above configuratio object properties. For snmpOptions the defaults are: _0.0.0.0, 161, 0, 5000, undefined_
+SnmpServer sets defaults for all the above configuratio object properties. For snmpOptions the defaults are: __0.0.0.0, 161, 0, 5000, undefined__
 
 ### Running an SNMP command and using the results
 ```js
