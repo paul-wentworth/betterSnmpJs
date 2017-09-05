@@ -37,26 +37,22 @@ srv.getRequest(snmpOptions, destination, oids, tableCb);
    
 ## Documentation
 ### getRequest(options, destination, oids, callback)
-- `[parameters]` `<Object>` Optional Abbyy API method parameters. Object with string properties.
-- `uploadData` `<string>` or `<Buffer>` Image to be processed by API method.  
-- `callback(err, results)` `<Function>` Callback to return `err`s or OCR `results`.
+- `options` `<Object>` Object representing SNMP Options for the command. Contains a version number and community string. `let snmpOptions = { version: 1, community: 'public' };`
+- `destination` `<Object>` Object representing destination. Contains an IP or URL string and a port number. `let destination = { address: 'URL or IP string', port: 161 };`
+- `oids` `<Array>` Array of OID strings (without the leading decimal) to perform GETs on. 
+- `callback(err, varbinds)` `<Function>` Callback function to process results. Returns either an error or varbinds representing the results of the GET Request.
 
 
 ### getNextRequest(options, destination, oids, callback)
-- `parameters` `<Object>` Abbyy API method parameters. A text field region must be specified. 
-- `uploadData` `<string>` or `<Buffer>` File to be processed by API method.  
-- `callback(err, results)` <Function> Callback to return `err`s or OCR `results`.
  
  
 ### walk(options, destination, oid, callback)
-- `[parameters]` `<Object>` Optional Abbyy API method parameters.
-- `uploadData` `<string>` or `<Buffer>` File to be uploaded to Abbyy server.  
-- `callback(err, results)` `<Function>` Callback to return `err`s or Task ID string representing uploaded file.
+- `oid` `<String>` A single OID string without the leading decimal. 
+
  
  
 ### table(options, destination, oid, callback)
-- `parameters` `<Object>` Abbyy API method parameters. Task ID corresponding to a file uploaded via submitImage is required.
-- `callback(err, results)` `<Function>` Callback to return `err`s or OCR `results`.
+- `oid` `<String>` A single OID string without the leading decimal. 
  
   
 ### trap()
