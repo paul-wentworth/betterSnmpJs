@@ -9,9 +9,9 @@ A more full featured SNMP library than the alternatives. Suitable for building b
 let SnmpServer = require('bettersnmpjs');
 ```
 ### Creating a server object
-- Pass your SNMP configuration, and optionally, your SNMP Trap reception configuration as objects to the constructor.
+Pass your SNMP configuration, and optionally, your SNMP Trap reception configuration as objects to the constructor.
 
-```
+```js
 snmpOptions     = { interface: , port: , timeoutRetries: , timeoutPeriod: , listener: } 
 snmpTrapOptions = { interface: , port: , listener: }
 
