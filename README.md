@@ -59,3 +59,5 @@ srv.getRequest(snmpOptions, destination, oids, tableCb);
 <in development>
 
       
+## Using `snmptranslate` to get useable OID strings from an MIB
+`snmptranslate -M <directory containing MIB, or single MIB file> -m ALL -Pu -Tso`
