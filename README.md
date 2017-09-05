@@ -1,7 +1,5 @@
 # betterSnmpJs
-A more full featured SNMP library than the alternatives. Suitable for building both client and servers (managers).
-
-## getRequest
+A more full featured SNMP library than the alternatives. Suitable for building both clients and servers (managers).
 
 ## Quick Start
 ### Install
@@ -19,7 +17,7 @@ snmpTrapOptions = { interface: , port: , listener: }
 
 const srv = new SnmpServer(snmpOptions, snmpTrapOptions);
 ```
-SnmpServer sets defaults for all the above configuratio object properties. For snmpOptions the defaults are: 0.0.0.0, 161, 0, 5000, undefined
+SnmpServer sets defaults for all the above configuratio object properties. For snmpOptions the defaults are: _0.0.0.0, 161, 0, 5000, undefined_
 
 ### Running an SNMP command and using the results
 ```js
@@ -38,32 +36,30 @@ srv.getRequest(snmpOptions, destination, oids, tableCb);
   
    
 ## Documentation
-### processImage([parameters], uploadData, callback)
+### getRequest(options, destination, oids, callback)
 - `[parameters]` `<Object>` Optional Abbyy API method parameters. Object with string properties.
 - `uploadData` `<string>` or `<Buffer>` Image to be processed by API method.  
 - `callback(err, results)` `<Function>` Callback to return `err`s or OCR `results`.
 
 
-### processTextField(parameters, uploadData, callback)
+### getNextRequest(options, destination, oids, callback)
 - `parameters` `<Object>` Abbyy API method parameters. A text field region must be specified. 
 - `uploadData` `<string>` or `<Buffer>` File to be processed by API method.  
 - `callback(err, results)` <Function> Callback to return `err`s or OCR `results`.
  
  
-### submitImage([parameters], uploadData, callback)
+### walk(options, destination, oid, callback)
 - `[parameters]` `<Object>` Optional Abbyy API method parameters.
 - `uploadData` `<string>` or `<Buffer>` File to be uploaded to Abbyy server.  
 - `callback(err, results)` `<Function>` Callback to return `err`s or Task ID string representing uploaded file.
  
  
-### processDocument(parameters, callback)
+### table(options, destination, oid, callback)
 - `parameters` `<Object>` Abbyy API method parameters. Task ID corresponding to a file uploaded via submitImage is required.
 - `callback(err, results)` `<Function>` Callback to return `err`s or OCR `results`.
  
   
-### processFields(parameters, uploadData, callback)
-- `parameters` `<Object>` Abbyy API method parameters. Task ID corresponding to a file uploaded via submitImage is required.
-- `uploadData` `<string>` or `<Buffer>` XML representing fields to be processed by API method. For more information on the format of this XML see: [XML Parameters of Field Recognition](http://ocrsdk.com/documentation/specifications/xml-scheme-field-settings/).
-- `callback(err, results)` `<Function>` Callback to return `err`s or OCR `results`.
+### trap()
+<in development>
 
       
