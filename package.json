@@ -1,0 +1,29 @@
+{
+  "name": "bettersnmpjs",
+  "version": "1.0.0",
+  "description": "A module to build SNMP Managers or Clients.",
+  "main": "snmpServer.js",
+  "dependencies": {
+    "asn1": "^0.2.3"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/paul-wentworth/betterSnmpJs.git"
+  },
+  "keywords": [
+    "snmp",
+    "JavaScript",
+    "manager",
+    "client"
+  ],
+  "author": "Paul Wentworth",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/paul-wentworth/betterSnmpJs/issues"
+  },
+  "homepage": "https://github.com/paul-wentworth/betterSnmpJs#readme"
+}
