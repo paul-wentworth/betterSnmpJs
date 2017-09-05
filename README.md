@@ -22,20 +22,17 @@ const srv = new SnmpServer(snmpOptions, snmpTrapOptions);
 SnmpServer sets defaults for all the above configuratio object properties. For snmpOptions the defaults are: 0.0.0.0, 161, 0, 5000, undefined
 
 ### Running an SNMP command and using the results
-- More information on API Parameters can be found here: [API Reference](http://ocrsdk.com/documentation/apireference/).
 ```js
 function snmpCb(err, results) {
     if( !err ) {
         console.log(JSON.stringify(results, null, 2)); // Raw results of completed Task (or a TaskId for submitImage calls)
     }
 }
-
 let oids = ['1.3.6.1.2.1.1.1.0']; // dcPwrSysRelayTable
 let destination = { address: 'demo.snmplabs.com', port: 161 };
 let snmpOptions = { version: 1, community: 'public' };
-srv.getRequest(this.snmpOptions, this.destination, this.oids, tableCb);
 
-srv.getRequest(apiParameters, './localFile.png', ocrComplete); // Buffers can also be passed
+srv.getRequest(snmpOptions, destination, oids, tableCb);
 ```
  
   
