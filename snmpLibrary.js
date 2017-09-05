@@ -95,10 +95,22 @@ function readValue(type, reader) // [TODO] - uint wrapper
     else if( type == DATATYPES.OctetString ) { value = reader.readString(); } 
     else if( type == DATATYPES.Null )        { value = reader.readByte(); }
     else if( type == DATATYPES.OID )         { value = reader.readOID(); }
-    else if( type == DATATYPES.IpAddress )   { value = reader.readString(); }
+    else if( type == DATATYPES.IpAddress )   
+    { 
+        let buf = reader.readString(DATATYPES.IpAddress, true); 
+        value = '';
+        for( let i = 0; i < buf.length; i++ )
+        {
+            value += (i == buf.length - 1) ? buf[i] : buf[i] + '.';
+        }
+    }
     else if (type == DATATYPES.Counter ||
 			 type == DATATYPES.Gauge   ||
-			 type == DATATYPES.TimeTicks)    { value = reader.readString(type, true)[0]; }
+             type == DATATYPES.TimeTicks)    
+    { 
+        value = reader.readString(type, true); 
+        value = value.readUIntBE(0, value.length);
+    }
     else if (type == DATATYPES.Opaque)       { value = reader.readString(); }
     else if (type == DATATYPES.Counter64)    { value = reader.readString(type, true); }
     else if (type == DATATYPES.NoSuchObject   ||
@@ -111,7 +123,7 @@ function readValue(type, reader) // [TODO] - uint wrapper
     }
     else { throw new Error(`Error: Invalid BER Datatype [${type}]`); }
 
-    return value; 
+    return {type, value}; 
 }
 
 
@@ -245,7 +257,7 @@ class pdu
             let oid   = reader.readOID();
             let type  = reader.peek(); 
             let value = readValue(type, reader); 
-            this.varbinds.push( [{oid: oid}, {value: value}] ); 
+            this.varbinds.push( [{oid: oid}, {type: value.type}, {value: value.value}] ); 
         }
 
         return reader; 
@@ -304,6 +316,7 @@ function inTree(root, oid)
 
 
 module.exports.PDUTYPES = PDUTYPES; 
+module.exports.DATATYPES = DATATYPES;
 module.exports.isRequest = isRequest;
 module.exports.generateNewRequestCfs = generateNewRequestCfs;
 module.exports.pdu = pdu;

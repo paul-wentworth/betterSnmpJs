@@ -163,8 +163,9 @@ class snmpServer
                 for( let i = 0; i < msg.pdu.varbinds.length; i++ )
                 {
                     let oid = msg.pdu.varbinds[i][0].oid;
-                    let value = msg.pdu.varbinds[i][1].value;
-                    let varbind = {oid, value}; 
+                    let type = msg.pdu.varbinds[i][1].type;
+                    let value = msg.pdu.varbinds[i][2].value;
+                    let varbind = {oid, type, value}; 
 
                     parsedVarbinds.push(varbind); 
                 }
@@ -245,59 +246,69 @@ class snmpServer
         this._sendMessage(msg, destination, callback); 
     }
 
-    walk(snmpOptions, destination, oid, callback)
+    walk(snmpOptions, destination, rootOid, callback)
     {
-        let results = [];
-
         function receiveNext(err, varbind)
         {
             if( err ) { callback(err); }
             else
             {
-                let nextOid = varbind[0].oid;
-                if( snmpLib.inTree(oid, nextOid) )
+                let oid = varbind[0].oid;
+                let type = varbind[0].type; 
+                if( !snmpLib.inTree(rootOid, oid) || type == snmpLib.DATATYPES.NoSuchObject || type == snmpLib.DATATYPES.NoSuchInstance || type == snmpLib.DATATYPES.EndOfMibView )
                 {
-                    results.push(varbind[0]);
-                    this.getNextRequest(snmpOptions, destination, [nextOid], receiveNext.bind(this));
+                    // Walk complete. Return results.
+                    callback(null, null);
                 }
                 else
                 {
-                    // Walk complete. Return results.
-                    callback(null, results);
+                    callback(null, varbind[0]);
+                    this.getNextRequest(snmpOptions, destination, [oid], receiveNext.bind(this));
                 }
+                
             }
         }
-        this.getNextRequest(snmpOptions, destination, [oid], receiveNext.bind(this));
+        this.getNextRequest(snmpOptions, destination, [rootOid], receiveNext.bind(this));
     }
 
     table(snmpOptions, destination, tableOid, callback)
     {
+        let walkResults = []; 
+
         function buildTable(err, varbinds)
         {
             if( err ) { callback(err); }
-            else
+            else if( varbinds ) { walkResults.push(varbinds); }
+            else if( varbinds == null )
             {
-                let table = []; // table = [rows][cols]
-                let entries = varbinds.length;
-                let rows = parseInt(varbinds[varbinds.length - 1].oid[varbinds[varbinds.length - 1].oid.length - 1]);
+                let table = {}; // table = [indices][cols]
+                let entries = walkResults.length;
+                let indices = [];
+                for( let i = 0; i < walkResults.length; i++ )
+                {
+                    let re = new RegExp(`${tableOid}.[0-9]+.[0-9]+.`);
+                    let index = walkResults[i].oid.replace(re, '');
+                    if( !indices.includes(index) ) { indices.push(index); }
+                }
+                let rows = indices.length; // number of unique index values
                 let cols = parseInt(entries / rows);
                 
+                // Build empty table data structure
                 for( let r = 0; r < rows; r++ )
                 {
                     let row = [];
-                    for( let c = 0; c < cols; c++ )
-                    {
-                        row.push(undefined);
-                    }
-                    table.push(row);
+                    for( let c = 0; c < cols; c++ ) { row.push(undefined); }
+                    table[indices[r]] = row;
                 }
 
                 let col = 0;
-                for( let v = 0; v < varbinds.length; v++ )
+                for( let i = 0; i < walkResults.length; i++ )
                 {
-                    let row = parseInt(varbinds[v].oid[varbinds[v].oid.length - 1]);
-                    table[row - 1][col] = varbinds[v].value;
-                    if( row == rows ) { col++; }
+                    let re = new RegExp(`${tableOid}.[0-9]+.[0-9]+.`);
+                    let index = walkResults[i].oid.replace(re, '');
+                    let row = indices.indexOf(index);
+                    table[indices[row]][col] = walkResults[i].value;
+                    if( row == rows - 1 ) { col++; }
                 }
     
                 callback(null, table);
